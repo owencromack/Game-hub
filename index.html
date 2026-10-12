@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10182b">
+  <title>PixelPort — Game Hub</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" id="homeBrand" aria-label="PixelPort home">
+        <span class="brand-mark">P</span><span>PIXEL<span class="brand-light">PORT</span></span>
+      </a>
+      <div class="top-actions">
+        <div class="xp-pill"><span class="spark">✦</span><span id="totalScore">0</span><small>PTS</small></div>
+        <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" title="Toggle sound">♫</button>
+      </div>
+    </header>
 
+    <main>
+      <section class="hero" id="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="live-dot"></span> YOUR PERSONAL ARCADE</div>
+          <h1>Pick a game.<br><span>Make a legend.</span></h1>
+          <p>A pocket-sized universe of adventures, challenges, and high scores.</p>
+          <button class="primary-btn" id="playFeatured">▶ PLAY FEATURED GAME <span>↗</span></button>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="planet planet-back"></div><div class="planet planet-main"></div>
+          <div class="pixel-star star-a">✦</div><div class="pixel-star star-b">✧</div>
+          <div class="floating-card card-a"><span>▲</span><b>JUMP!</b></div>
+          <div class="floating-card card-b"><span>★</span><b>LEVEL UP</b></div>
+          <div class="hero-cube"><i></i><i></i><i></i></div>
+        </div>
+      </section>
+
+      <section class="stats-row">
+        <div class="stat-card"><span class="stat-icon purple">▦</span><div><b id="gameCount">7</b><small>GAMES TO PLAY</small></div></div>
+        <div class="stat-card"><span class="stat-icon orange">♛</span><div><b id="bestScore">0</b><small>PERSONAL BEST</small></div></div>
+        <div class="stat-card"><span class="stat-icon mint">◷</span><div><b id="playedCount">0</b><small>GAMES PLAYED</small></div></div>
+      </section>
+
+      <section class="section-heading">
+        <div><div class="eyebrow">THE GAME LIBRARY</div><h2>Choose your adventure</h2></div>
+        <label class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Find a game..." autocomplete="off"></label>
+      </section>
+      <nav class="filter-row" aria-label="Filter games">
+        <button class="filter active" data-filter="all">All games <span>7</span></button>
+        <button class="filter" data-filter="action">Action</button>
+        <button class="filter" data-filter="arcade">Arcade</button>
+        <button class="filter" data-filter="story">Story</button>
+        <button class="filter" data-filter="racing">Racing</button>
+      </nav>
+
+      <section class="game-grid" id="gameGrid">
+        <article class="game-card" data-game="platformer" data-category="action" data-title="Skybound platformer">
+          <button class="favorite-btn" data-favorite="platformer" aria-label="Favorite Skybound">♡</button>
+          <div class="game-art art-platform"><div class="sun"></div><div class="cloud cloud-one"></div><div class="cloud cloud-two"></div><div class="mountain"></div><div class="platform p-one"></div><div class="platform p-two"></div><div class="tiny-player"></div><span class="art-tag">JUMP & RUN</span></div>
+          <div class="game-info"><div><h3>Skybound</h3><p>Platformer · Collect stars and leap to the exit.</p></div><span class="game-number">01</span></div>
+          <button class="card-play" data-play="platformer">Play game <span>→</span></button>
+        </article>
+        <article class="game-card" data-game="dino" data-category="action" data-title="Neon Dash dino runner">
+          <button class="favorite-btn" data-favorite="dino" aria-label="Favorite Neon Dash">♡</button>
+          <div class="game-art art-dino"><div class="moon"></div><div class="dino-ground"></div><div class="dino-silhouette"><i></i></div><div class="cactus cactus-one"></div><div class="cactus cactus-two"></div><span class="art-tag">ENDLESS RUNNER</span></div>
+          <div class="game-info"><div><h3>Neon Dash</h3><p>Runner · Jump over obstacles and beat your best.</p></div><span class="game-number">02</span></div>
+          <button class="card-play" data-play="dino">Play game <span>→</span></button>
+        </article>
+        <article class="game-card" data-game="arcade" data-category="arcade" data-title="Arcade Alley skee ball whack a mole">
+          <button class="favorite-btn" data-favorite="arcade" aria-label="Favorite Arcade Alley">♡</button>
+          <div class="game-art art-arcade"><div class="neon-sign">ARCADE</div><div class="machine machine-one"><i></i><i></i><i></i></div><div class="machine machine-two"><i></i><i></i></div><div class="arcade-floor"></div><span class="art-tag">MINI-GAME MIX</span></div>
+          <div class="game-info"><div><h3>Arcade Alley</h3><p>Arcade · Skee-ball, whack-a-mole, and more.</p></div><span class="game-number">03</span></div>
+          <button class="card-play" data-play="arcade">Play game <span>→</span></button>
+        </article>
+        <article class="game-card" data-game="racer" data-category="racing" data-title="Turbo Circuit racing">
+          <button class="favorite-btn" data-favorite="racer" aria-label="Favorite Turbo Circuit">♡</button>
+          <div class="game-art art-racer"><div class="race-track"><div class="lane-mark"></div></div><div class="car car-red"></div><div class="car car-blue"></div><span class="art-tag">RACE YOUR GHOST</span></div>
+          <div class="game-info"><div><h3>Turbo Circuit</h3><p>Racing · Dodge traffic and survive the track.</p></div><span class="game-number">04</span></div>
+          <button class="card-play" data-play="racer">Play game <span>→</span></button>
+        </article>
+        <article class="game-card" data-game="story" data-category="story" data-title="The Last Lighthouse text adventure">
+          <button class="favorite-btn" data-favorite="story" aria-label="Favorite The Last Lighthouse">♡</button>
+          <div class="game-art art-story"><div class="story-moon"></div><div class="story-sea"></div><div class="lighthouse"><i></i></div><div class="story-beam"></div><span class="art-tag">TEXT ADVENTURE</span></div>
+          <div class="game-info"><div><h3>The Last Lighthouse</h3><p>Story · Explore a mysterious island through choices.</p></div><span class="game-number">05</span></div>
+          <button class="card-play" data-play="story">Play game <span>→</span></button>
+        </article>
+        <article class="game-card" data-game="choose" data-category="story" data-title="Choose Your Own Adventure">
+          <button class="favorite-btn" data-favorite="choose" aria-label="Favorite Choose Your Own">♡</button>
+          <div class="game-art art-choose"><div class="door door-one"><i>?</i></div><div class="door door-two"><i>!</i></div><div class="door door-three"><i>✦</i></div><div class="floor-glow"></div><span class="art-tag">YOUR CHOICE MATTERS</span></div>
+          <div class="game-info"><div><h3>Fork in the Road</h3><p>Choose-your-own · Make decisions, find endings.</p></div><span class="game-number">06</span></div>
+          <button class="card-play" data-play="choose">Play game <span>→</span></button>
+        </article>
+        <article class="game-card" data-game="builder" data-category="arcade" data-title="Pixel Painter creative sandbox">
+          <button class="favorite-btn" data-favorite="builder" aria-label="Favorite Pixel Painter">♡</button>
+          <div class="game-art art-builder"><div class="canvas-grid"></div><div class="paint-block block-one"></div><div class="paint-block block-two"></div><div class="paint-block block-three"></div><div class="paint-block block-four"></div><span class="art-tag">CREATIVE MODE</span></div>
+          <div class="game-info"><div><h3>Pixel Painter</h3><p>Creative · Build a little pixel world, one tile at a time.</p></div><span class="game-number">07</span></div>
+          <button class="card-play" data-play="builder">Play game <span>→</span></button>
+        </article>
+      </section>
+      <section class="empty-state hidden" id="emptyState"><span>⌕</span><h3>No games found</h3><p>Try another search or category.</p></section>
+    </main>
+    <footer><div class="brand small-brand"><span class="brand-mark">P</span><span>PIXEL<span class="brand-light">PORT</span></span></div><span>Made for curious players. <span class="footer-star">✦</span></span><span class="footer-right">Your progress saves on this device.</span></footer>
+  </div>
+
+  <div class="game-modal hidden" id="gameModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-panel">
+      <div class="modal-top"><div><div class="eyebrow" id="modalEyebrow">NOW PLAYING</div><h2 id="modalTitle">Game title</h2></div><button class="close-btn" id="closeModal" aria-label="Close game">✕</button></div>
+      <div id="gameStage" class="game-stage"></div>
+      <div class="modal-bottom"><span id="gameHint">Have fun!</span><button class="secondary-btn" id="restartGame">↻ Restart</button></div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
