@@ -9,7 +9,8 @@
     racer:{title:"Turbo Circuit",hint:"Steer with ← → or the on-screen controls. Avoid traffic and survive."},
     story:{title:"The Last Lighthouse",hint:"Read carefully. Your choices shape the journey."},
     choose:{title:"Fork in the Road",hint:"Explore the paths and see which ending you discover."},
-    builder:{title:"Pixel Painter",hint:"Pick a color and tap the tiles to make your own pixel art."}
+    builder:{title:"Pixel Painter",hint:"Pick a color and tap the tiles to make your own pixel art."},
+    dungeon:{title:"Crypt Crawler",hint:"Fight through the dungeon. Choose an action each turn, use potions wisely, and reach the final chamber."}
   };
   const storeKey = "pixelport-progress-v1";
   let saved = {score:0,best:0,played:0,favorites:[]};
@@ -33,7 +34,7 @@
     if(!games[id])return;
     closeGame(false);currentGame=id;$("#modalTitle").textContent=games[id].title;$("#gameHint").textContent=games[id].hint;
     modal.classList.remove("hidden");document.body.style.overflow="hidden";gamePlayed();
-    const renderers={platformer:renderPlatformer,dino:renderDino,arcade:renderArcade,racer:renderRacer,story:renderStory,choose:renderChoose,builder:renderBuilder};
+    const renderers={platformer:renderPlatformer,dino:renderDino,arcade:renderArcade,racer:renderRacer,story:renderStory,choose:renderChoose,builder:renderBuilder,dungeon:renderDungeon};
     cleanupCurrent=(renderers[id]||renderStory)();
     $("#restartGame").onclick=()=>openGame(id);
   }
@@ -61,44 +62,54 @@
   function message(parent,text){const d=document.createElement("div");d.className="stage-message";d.textContent=text;parent.appendChild(d);return d;}
   function renderStory(){
     const root=stageBase();
-    const scenes=[
-      {title:"A light in the storm",text:"Your little boat bumps against a rocky shore. Above you, a lighthouse flashes once, then goes dark. In your pocket: a brass key and a half-torn map.",choices:[["Climb the winding path","path"],["Search the tide pools","pools"]]},
-      {title:"The winding path",text:"Wind whistles between the pines. You find a weather-beaten shed with a warm glow beneath its door. The brass key feels strangely warm.",choices:[["Unlock the shed","shed"],["Keep climbing to the lighthouse","tower"]]},
-      {title:"The tide pools",text:"Among the shells, you find a glass bottle. Inside is a note: “When the bell rings, follow the blue light.” A distant bell answers the thunder.",choices:[["Follow a blue glow along the rocks","glow"],["Head for the lighthouse","tower"]]},
-      {title:"The shed",text:"The key turns. Inside is an old lantern and a journal. The keeper wrote that the lighthouse needs a new flame, and the lantern can carry it.",choices:[["Take the lantern to the top","towerLantern"],["Read the journal first","journal"]]},
-      {title:"The journal",text:"The final page shows a symbol matching the mark on your map. You now know the lighthouse is not abandoned—it's waiting for someone to finish the job.",choices:[["Take the lantern upstairs","towerLantern"],["Return to the shore","shore"]]},
-      {title:"The blue light",text:"A trail of tiny blue lights leads to a hidden stairway. At the top, a sealed door bears the same symbol as your map.",choices:[["Use the brass key","tower"],["Go back and find another way","path"]]},
-      {title:"The lighthouse",text:"You reach the lantern room. The great lens is still, and the sea beyond is nearly invisible. A small empty socket waits in the center of the old mechanism.",choices:[["Place the lantern in the socket","win"],["Look out to sea one last time","sea"]]},
-      {title:"A new keeper",text:"The lantern catches. Light sweeps across the waves, revealing a safe channel through the rocks. Far offshore, another boat answers with a tiny light. The island has found its next keeper.",choices:[["Play again","restart"]]},
-      {title:"The sea answers",text:"A pale shape moves beneath the waves. For a moment, the storm seems to hold its breath. Then the lighthouse lens begins to turn by itself. Perhaps the island has secrets left for another night.",choices:[["Try a different path","restart"]]},
-      {title:"The quiet shore",text:"You return to the beach as the clouds begin to part. You may not have solved the island's mystery, but the brass key is yours to keep.",choices:[["Start a new journey","restart"]]}
-    ];
-    let idx=0,hasLantern=false;
+    const scenes={
+      start:{title:"A light in the storm",text:"Your boat scrapes against a rocky shore. The lighthouse above flashes once, then goes dark. You have a brass key, a torn map, and a lantern with almost no oil.",choices:[["Climb the cliff path","path"],["Search the tide pools","pools"],["Follow strange footprints into the caves","cave"]]},
+      path:{title:"The winding path",text:"The path forks beneath a leaning pine. One branch climbs toward the lighthouse; the other leads to a shed with a broken door. Thunder rolls behind you.",choices:[["Inspect the shed","shed"],["Rush up the exposed cliff","storm"],["Follow the footprints back downhill","cave"]]},
+      pools:{title:"The tide pools",text:"You find a bottle containing a note: “When the bell rings, follow the blue light.” A bell sounds from somewhere beneath the cliffs, and the tide is rising quickly.",choices:[["Follow the blue lights","blue"],["Climb toward the lighthouse","tower"],["Stay and search the pools longer","tide"]]},
+      cave:{title:"The whispering cave",text:"Blue fungus glows along the cave walls. You hear a voice asking for your lantern. A narrow tunnel slopes down toward rushing water.",choices:[["Give the voice your lantern","voice"],["Explore the narrow tunnel","flood"],["Back away and return to the path","path"]]},
+      shed:{title:"The keeper's shed",text:"Inside, you discover a sealed oil can and a journal. The brass key fits a cabinet. A note warns: “Never light the lens before winding the bell.”",choices:[["Take the oil and read the journal","journal"],["Ignore the warning and go to the lens room","badLight"],["Return to the shore","shore"]]},
+      journal:{title:"A keeper's warning",text:"The journal explains that the bell steadies the lighthouse mechanism. The oil can is enough for one attempt. The bell tower stands on the far side of the island.",choices:[["Go wind the bell first","bell"],["Use the oil right now","badLight"],["Hide in the shed until morning","hide"]]},
+      blue:{title:"The blue stairway",text:"The lights lead to a hidden staircase and a door marked with the same symbol as your map. Beyond it, you can hear the bell mechanism grinding.",choices:[["Open the door with your brass key","bell"],["Walk away from the stairs","shore"],["Force the door open","trap"]]},
+      tower:{title:"The lantern room",text:"The great lens is still. The sea is almost invisible through the rain. A socket waits beside the mechanism, but the bell has not rung.",choices:[["Light the lens anyway","badLight"],["Search for the bell mechanism","bell"],["Look out to sea","sea"]]},
+      bell:{title:"The bell tower",text:"You pull the rusted rope until the bell rings. The sound rolls across the island and the lighthouse mechanism begins to turn. You have one chance to relight the lens.",choices:[["Take the oil to the lantern room","good"],["Follow the sound of footsteps below","voice"],["Leave the island while you can","shore"]]},
+      good:{title:"A safe channel",text:"You pour the oil and light the wick. The lens turns, sending a bright path across the waves. A distant boat answers with a signal lamp. At dawn, you leave the island with a story worth telling.",ending:"good"},
+      storm:{title:"Lost in the storm",text:"A flash of lightning blinds you on the exposed cliff. When the rain clears, the path has crumbled behind you and your map is gone. You make it to shore at sunrise, but the lighthouse stays dark.",ending:"bad"},
+      tide:{title:"Taken by the tide",text:"The sea surges into the pools and cuts off your way out. You scramble to a ledge and wait for the water to retreat. By the time you return, the trail to the lighthouse has vanished beneath a rockslide.",ending:"bad"},
+      flood:{title:"The flooded tunnel",text:"The tunnel narrows, and water rushes in from a hidden opening. You retreat just in time, leaving your lantern behind. The cave is sealed by the rising tide; the lighthouse remains a mystery.",ending:"bad"},
+      voice:{title:"The bargain",text:"A pale keeper's spirit takes the lantern and fades into the wall. The cave fills with blue light, revealing a passage out—but your only flame is gone. You escape safely, though the beacon never returns.",ending:"bittersweet"},
+      badLight:{title:"The lens goes dark",text:"You light the lens before the bell is wound. The mechanism shudders, sparks, and falls silent. A distant ship turns away from the rocks, but the island's beacon is lost until another keeper arrives.",ending:"bad"},
+      trap:{title:"The sealed chamber",text:"The door swings open, then slams shut behind you. The room is safe, but there is no handle on the inside. You discover an old supply cache and wait until rescuers arrive days later.",ending:"bad"},
+      sea:{title:"A light beneath the waves",text:"Something glimmers beneath the water. You lean closer and notice the tide climbing over the steps. You escape down the cliff, shaken by what you saw, and leave the island behind.",ending:"bad"},
+      hide:{title:"Morning comes",text:"You wake to a clear sky, but the bell tower has collapsed in the storm. You find a rescue boat offshore and leave safely, wondering what might have happened if you had acted sooner.",ending:"bittersweet"},
+      shore:{title:"The quiet shore",text:"You return to the beach and signal a passing fishing boat. The island's secret remains unsolved. You are safe, but the lighthouse still waits for someone else.",ending:"bittersweet"}
+    };
     function show(id){
-      if(id==="restart"){idx=0;hasLantern=false;return show("start");}
-      if(id==="towerLantern"){hasLantern=true;return show("tower");}
-      if(id==="tower"&&hasLantern)id="win";
-      const map={start:0,path:1,pools:2,shed:3,journal:4,glow:5,tower:6,win:7,sea:8,shore:9};
-      idx=map[id]??0;const s=scenes[idx];root.innerHTML=`<div class="eyebrow">CHAPTER ${idx+1} / ISLAND MYSTERY</div><h3 class="stage-title">${s.title}</h3><p class="story-text">${s.text}</p><div class="choice-list"></div><div class="story-status">${hasLantern?"LANTERN FOUND":"BRASS KEY · TORN MAP"}</div>`;
-      const list=$(".choice-list",root);s.choices.forEach(([label,next])=>{const b=document.createElement("button");b.className="choice-btn";b.textContent="↳ "+label;b.onclick=()=>{beep(480);if(next==="win")addScore(100);show(next);};list.appendChild(b);});
+      const s=scenes[id]||scenes.start;
+      root.innerHTML=`<div class="eyebrow">ISLAND MYSTERY · ${s.ending?"ENDING":"CHOOSE YOUR PATH"}</div><h3 class="stage-title">${s.title}</h3><p class="story-text">${s.text}</p><div class="choice-list"></div>${s.ending?`<div class="story-status">${s.ending==="good"?"✦ BEACON RESTORED":s.ending==="bad"?"ENDING: THE ISLAND WINS":"ENDING: SAFE, BUT UNSOLVED"}</div>`:""}`;
+      const list=$(".choice-list",root);
+      if(s.ending){if(s.ending==="good")addScore(100);else if(s.ending==="bittersweet")addScore(15);const b=document.createElement("button");b.className="choice-btn";b.textContent="↳ Start a new journey";b.onclick=()=>show("start");list.appendChild(b);return;}
+      s.choices.forEach(([label,next])=>{const b=document.createElement("button");b.className="choice-btn";b.textContent="↳ "+label;b.onclick=()=>{beep(480);show(next);};list.appendChild(b);});
     }
     show("start");return ()=>{};
   }
   function renderChoose(){
-    const root=stageBase();let courage=0,clues=0;
+    const root=stageBase();
     const nodes={
-      start:{title:"The Door at the Edge of the World",text:"At the end of a quiet street stands a doorway floating in midair. Three symbols glow across it: a mountain, a wave, and a star.",opts:[["Choose the mountain","mountain"],["Choose the wave","wave"],["Choose the star","star"]]},
-      mountain:{title:"The Glass Mountain",text:"You climb a mountain made of clear crystal. Halfway up, a tiny dragon guards a bridge and asks for something brave—not something valuable.",opts:[["Tell the dragon what you fear","brave"],["Offer your map","map"]]},
-      wave:{title:"The City Below",text:"Beneath the waves, a city glows inside a giant bubble. The royal library has one book with your name on its spine.",opts:[["Open the book","book"],["Help repair the city's bell","bell"]]},
-      star:{title:"The Star Train",text:"A silver train arrives on a track of starlight. The conductor says it can take you anywhere, but only once.",opts:[["Travel to tomorrow","tomorrow"],["Ask to visit a forgotten memory","memory"]]},
-      brave:{title:"The Brave Ending",text:"The dragon nods. You cross the bridge and discover a garden above the clouds. Your courage has opened a path that wasn't there before.",opts:[["Play another route","start"]],end:true},
-      map:{title:"The Map Ending",text:"The dragon studies your map and draws a new path on it: a route to a hidden sky village. You leave with a bigger world than you started with.",opts:[["Play another route","start"]],end:true},
-      book:{title:"The Story Ending",text:"The book contains a story about someone who made a choice at a magical doorway. The final page is blank, waiting for your next chapter.",opts:[["Play another route","start"]],end:true},
-      bell:{title:"The Helpful Hero Ending",text:"The city bell rings again, and every window lights up. The citizens name you an honorary explorer and give you a pearl that remembers this place.",opts:[["Play another route","start"]],end:true},
-      tomorrow:{title:"The Future Ending",text:"Tomorrow's world is full of floating gardens and friendly robots. You bring back one idea that changes your own world for the better.",opts:[["Play another route","start"]],end:true},
-      memory:{title:"The Memory Ending",text:"You revisit a small, happy moment you had nearly forgotten. It feels brighter than any star. You return knowing the best treasures can travel with you.",opts:[["Play another route","start"]],end:true}
+      start:{title:"The Door at the Edge of the World",text:"A doorway floats at the end of a quiet street. Three symbols glow across it: a mountain, a wave, and a star. A small sign says: “Every road asks a price.”",opts:[["Choose the mountain","mountain"],["Choose the wave","wave"],["Choose the star","star"]]},
+      mountain:{title:"The Glass Mountain",text:"A crystal bridge crosses a deep ravine. A dragon guards it, asking for a brave truth before it will let you pass.",opts:[["Admit what scares you","brave"],["Pretend you fear nothing","bluff"],["Try to sneak past the dragon","sneak"]]},
+      wave:{title:"The City Below",text:"A glowing city rests inside a bubble beneath the sea. The gatekeeper offers you a pearl that can grant one wish, but warns that it always takes something in return.",opts:[["Wish to breathe underwater","pearl"],["Wish to become ruler","greed"],["Refuse the pearl and help repair the bell","bell"]]},
+      star:{title:"The Star Train",text:"A silver train waits on a track of starlight. The conductor offers one journey: tomorrow, a forgotten memory, or a place that no longer exists.",opts:[["Travel to tomorrow","future"],["Visit a forgotten memory","memory"],["Go to the vanished city","vanished"]]},
+      brave:{title:"The Sky Garden",text:"The dragon respects your honesty and guides you across. Above the clouds, a garden blooms around a quiet observatory. You leave with a new map and a clearer sense of yourself.",opts:[["Return to the doorway","start"]],end:"good"},
+      bluff:{title:"The Crumbling Bridge",text:"The dragon sees through your boast. The bridge cracks under your feet and you scramble back to safety, but the mountain path closes behind you.",opts:[["Try another path","start"]],end:"bad"},
+      sneak:{title:"Caught in the Act",text:"You creep past the dragon, but a loose crystal rings like a bell. The dragon sends you back to the doorway with a stern warning: courage is not the same as pretending.",opts:[["Try another path","start"]],end:"bad"},
+      pearl:{title:"The Sea Explorer",text:"You wish to breathe underwater. The pearl takes your voice in exchange, but opens a whole new world of coral libraries and gentle sea creatures. You can explore, though you cannot speak.",opts:[["Try another path","start"]],end:"mixed"},
+      greed:{title:"The Empty Throne",text:"The wish makes you ruler—but everyone vanishes from the city, leaving you alone in a silent palace. The pearl glows once, then turns to sand.",opts:[["Try another path","start"]],end:"bad"},
+      bell:{title:"The City Remembers",text:"You help repair the bell. Its clear sound wakes the city's lights, and the citizens share their knowledge freely. You leave with a small compass that points toward kindness.",opts:[["Return to the doorway","start"]],end:"good"},
+      future:{title:"Tomorrow's Price",text:"You arrive in a bright future full of floating gardens, but discover your return ticket has expired. You find a place there and send a message home, knowing the choice cannot be undone.",opts:[["Try another path","start"]],end:"mixed"},
+      memory:{title:"A Precious Moment",text:"You revisit a small happy moment you nearly forgot. It feels brighter than any star, and you return with the memory intact and a renewed appreciation for ordinary days.",opts:[["Return to the doorway","start"]],end:"good"},
+      vanished:{title:"The City That Wasn't",text:"The train arrives at a city made of mist. As you step off, the platform dissolves and the train departs. You find a way home at dawn, but the vanished city remains beyond reach.",opts:[["Try another path","start"]],end:"bad"}
     };
-    function show(id){const n=nodes[id];root.innerHTML=`<div class="eyebrow">CHOOSE YOUR OWN ADVENTURE</div><h3 class="stage-title">${n.title}</h3><p class="story-text">${n.text}</p><div class="choice-list"></div>${n.end?'<div class="score-chip">ENDING DISCOVERED ✦ +25 PTS</div>':""}`;if(n.end)addScore(25);const list=$(".choice-list",root);n.opts.forEach(([label,next])=>{const b=document.createElement("button");b.className="choice-btn";b.textContent="↳ "+label;b.onclick=()=>{beep(510);show(next);};list.appendChild(b);});}
+    function show(id){const n=nodes[id]||nodes.start;root.innerHTML=`<div class="eyebrow">CHOOSE YOUR OWN ADVENTURE</div><h3 class="stage-title">${n.title}</h3><p class="story-text">${n.text}</p><div class="choice-list"></div>${n.end?`<div class="story-status">${n.end==="good"?"✦ GOOD ENDING":n.end==="bad"?"ENDING: A HARD LESSON":"BITTERSWEET ENDING"} · +${n.end==="good"?30:n.end==="mixed"?15:5} PTS</div>`:""}`;const list=$(".choice-list",root);if(n.end)addScore(n.end==="good"?30:n.end==="mixed"?15:5);n.opts.forEach(([label,next])=>{const b=document.createElement("button");b.className="choice-btn";b.textContent="↳ "+label;b.onclick=()=>{beep(510);show(next);};list.appendChild(b);});}
     show("start");return ()=>{};
   }
   function renderArcade(){
@@ -144,8 +155,10 @@
       obstacles.forEach(o=>o.x-=speed*dt);obstacles=obstacles.filter(o=>o.x>-40);
       const px=player.x+3,py=player.y-26;for(const o of obstacles){if(px<o.x+o.width&&px+21>o.x&&py<h-29&&player.y>h-29-o.height+2){over=true;cancelAnimationFrame(raf);saved.best=Math.max(saved.best,Math.floor(score));persist();addScore(Math.floor(score));const cover=document.createElement("div");cover.className="game-over";cover.innerHTML=`<div><h3>Run over!</h3><p>You scored ${Math.floor(score)} points.</p><button class="game-btn primary" id="runAgain">Run again ↻</button></div>`;stage.appendChild(cover);$("#runAgain",cover).onclick=()=>{cover.remove();start();};break;}}
       draw();if(!over)raf=requestAnimationFrame(loop);}
-    resize();const key=e=>{if([" ","ArrowUp"].includes(e.key)&&currentGame==="dino"){e.preventDefault();jump();}};document.addEventListener("keydown",key);$("#jumpBtn",root).onclick=jump;canvas.addEventListener("pointerdown",jump);raf=requestAnimationFrame(loop);
-    return ()=>{cancelAnimationFrame(raf);document.removeEventListener("keydown",key);};
+    resize();const key=e=>{if([" ","ArrowUp"].includes(e.key)&&currentGame==="dino"){e.preventDefault();jump();}};document.addEventListener("keydown",key);$("#jumpBtn",root).onclick=jump;canvas.addEventListener("pointerdown",jump);
+    const anywhereTap=e=>{if(currentGame==="dino"&&!e.target.closest("button"))jump();};
+    stage.addEventListener("pointerdown",anywhereTap);raf=requestAnimationFrame(loop);
+    return ()=>{cancelAnimationFrame(raf);document.removeEventListener("keydown",key);stage.removeEventListener("pointerdown",anywhereTap);};
   }
   function renderPlatformer(){
     const root=stageBase();root.innerHTML='<div class="eyebrow">PLATFORMER</div><h3 class="stage-title">Skybound</h3><div class="score-chip">STARS <span id="starCount">0</span>/5</div><canvas class="lane-canvas" id="platformCanvas" aria-label="Platform game canvas"></canvas><div class="platform-controls"><button class="control-btn" id="leftBtn">← LEFT</button><button class="control-btn" id="jumpPlatform">↑ JUMP</button><button class="control-btn" id="rightBtn">RIGHT →</button></div><div class="platform-hint">Collect all 5 stars and reach the glowing portal. Keyboard: arrows + Space.</div>';
@@ -167,7 +180,8 @@
     }draw();raf=requestAnimationFrame(loop);}
     resize();const keydown=e=>{if(["ArrowLeft","ArrowRight","ArrowUp"," "].includes(e.key)){keys[e.key]=true;if(currentGame==="platformer")e.preventDefault();}};const keyup=e=>{keys[e.key]=false;};document.addEventListener("keydown",keydown);document.addEventListener("keyup",keyup);
     const hold=(id,key)=>{const b=$("#"+id,root);b.addEventListener("pointerdown",e=>{e.preventDefault();keys[key]=true;});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>keys[key]=false));};hold("leftBtn","ArrowLeft");hold("rightBtn","ArrowRight");$("#jumpPlatform",root).onclick=()=>{keys.jump=true;player.vy=-9.4;beep(400);};
-    raf=requestAnimationFrame(loop);return ()=>{cancelAnimationFrame(raf);document.removeEventListener("keydown",keydown);document.removeEventListener("keyup",keyup);};
+    let touchStart=null;const touchAnywhere=e=>{const rect=stage.getBoundingClientRect(),x=e.clientX-rect.left;if(e.target.closest("button"))return;touchStart={x,y:e.clientY};if(x<rect.width*.33)keys.ArrowLeft=true;else if(x>rect.width*.67)keys.ArrowRight=true;else{player.vy=-9.4;beep(400);}};const touchEnd=()=>{keys.ArrowLeft=false;keys.ArrowRight=false;touchStart=null;};stage.addEventListener("pointerdown",touchAnywhere);stage.addEventListener("pointerup",touchEnd);stage.addEventListener("pointercancel",touchEnd);
+    raf=requestAnimationFrame(loop);return ()=>{cancelAnimationFrame(raf);document.removeEventListener("keydown",keydown);document.removeEventListener("keyup",keyup);stage.removeEventListener("pointerdown",touchAnywhere);stage.removeEventListener("pointerup",touchEnd);stage.removeEventListener("pointercancel",touchEnd);};
   }
   function renderRacer(){
     const root=stageBase();root.innerHTML='<div class="eyebrow">TURBO CIRCUIT</div><h3 class="stage-title">Stay on the road</h3><div class="score-chip">DISTANCE <span id="raceScore">0</span> m</div><canvas class="lane-canvas" id="raceCanvas" aria-label="Racing game canvas"></canvas><div class="canvas-controls"><button class="control-btn" id="raceLeft">← STEER</button><button class="control-btn" id="raceRight">STEER →</button></div><div class="platform-hint">Dodge the cars for as long as you can.</div>';
@@ -180,6 +194,35 @@
     }
     function loop(t){const dt=Math.min((t-last||16)/16,2);last=t;if(!over){score+=dt*.4;speed=Math.min(9,4+score/80);stripe+=speed*dt;$("#raceScore",root).textContent=Math.floor(score);if(Math.random()<.025*dt)traffic.push({lane:Math.floor(Math.random()*3),y:-30});traffic.forEach(o=>o.y+=speed*dt);traffic=traffic.filter(o=>o.y<h+40);for(const o of traffic){if(o.lane===playerLane&&o.y>h-85&&o.y<h-22){over=true;cancelAnimationFrame(raf);addScore(Math.floor(score));const cover=document.createElement("div");cover.className="game-over";cover.innerHTML=`<div><h3>Crash!</h3><p>You travelled ${Math.floor(score)} m.</p><button class="game-btn primary" id="raceAgain">Race again ↻</button></div>`;stage.appendChild(cover);$("#raceAgain",cover).onclick=()=>{cover.remove();start();};break;}}draw();if(!over)raf=requestAnimationFrame(loop);}}
     function left(){playerLane=Math.max(0,playerLane-1);beep(300,.04);}function right(){playerLane=Math.min(2,playerLane+1);beep(350,.04);}
-    resize();const key=e=>{if(currentGame==="racer"&&["ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();e.key==="ArrowLeft"?left():right();}};document.addEventListener("keydown",key);$("#raceLeft",root).onclick=left;$("#raceRight",root).onclick=right;raf=requestAnimationFrame(loop);return ()=>{cancelAnimationFrame(raf);document.removeEventListener("keydown",key);};
+    resize();const key=e=>{if(currentGame==="racer"&&["ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();e.key==="ArrowLeft"?left():right();}};document.addEventListener("keydown",key);$("#raceLeft",root).onclick=left;$("#raceRight",root).onclick=right;
+    let startX=0;const steerDown=e=>{if(e.target.closest("button"))return;startX=e.clientX;};const steerUp=e=>{if(e.target.closest("button"))return;const dx=e.clientX-startX;if(Math.abs(dx)>20){dx<0?left():right();}else{const r=stage.getBoundingClientRect();e.clientX<r.left+r.width/2?left():right();}};stage.addEventListener("pointerdown",steerDown);stage.addEventListener("pointerup",steerUp);raf=requestAnimationFrame(loop);return ()=>{cancelAnimationFrame(raf);document.removeEventListener("keydown",key);stage.removeEventListener("pointerdown",steerDown);stage.removeEventListener("pointerup",steerUp);};
   }
+  function renderDungeon(){
+    const root=stageBase();
+    const monsters=[
+      {name:"Cave Slime",hp:24,max:24,atk:5,xp:10,color:"#65d69b"},
+      {name:"Crypt Bat",hp:30,max:30,atk:7,xp:15,color:"#a58cff"},
+      {name:"Skeleton Guard",hp:42,max:42,atk:9,xp:20,color:"#e5d8c1"},
+      {name:"Moss Ogre",hp:58,max:58,atk:11,xp:30,color:"#8cbd75"},
+      {name:"The Ember Warden",hp:78,max:78,atk:13,xp:60,color:"#ff8d78"}
+    ];
+    let floor=0,hp=100,maxHp=100,potions=3,gold=0,xp=0,guarding=false,ended=false,monster=null;
+    root.innerHTML='<div class="eyebrow">DUNGEON RUN · FLOOR 1 OF 5</div><h3 class="stage-title">Crypt Crawler</h3><p class="stage-copy">Descend through five chambers, defeat the monsters, and collect treasure. Rest between floors to recover a little health.</p><div class="dungeon-hud"></div><div class="dungeon-scene"></div><div class="button-row dungeon-actions"></div><div class="stage-message dungeon-log">You enter the crypt. Something moves in the shadows…</div>';
+    const hud=$(".dungeon-hud",root),scene=$(".dungeon-scene",root),actions=$(".dungeon-actions",root),log=$(".dungeon-log",root);
+    function say(t){log.textContent=t;}
+    function updateHud(){hud.innerHTML=`<div class="score-chip">♥ HP ${hp}/${maxHp}</div> <div class="score-chip">✦ XP ${xp}</div> <div class="score-chip">◈ GOLD ${gold}</div> <div class="score-chip">✚ POTIONS ${potions}</div>`;}
+    function drawScene(){
+      const m=monster;scene.innerHTML=`<div style="position:relative;min-height:190px;overflow:hidden;border-radius:10px;margin-top:14px;background:radial-gradient(ellipse at 50% 20%,#42335d,#1c2337 58%,#101725);border:1px solid #ffffff14"><div style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 34px,#c7b7ef0b 35px 37px),repeating-linear-gradient(0deg,transparent 0 30px,#c7b7ef0a 31px 33px)"></div><div style="position:absolute;left:8%;bottom:20px;width:52px;height:58px;background:#4c4762;border:3px solid #8d82a8;box-shadow:inset -7px -7px #302a40;border-radius:5px"></div><div style="position:absolute;right:8%;bottom:20px;width:44px;height:46px;background:#4c4762;border:3px solid #8d82a8;box-shadow:inset -7px -7px #302a40;border-radius:5px"></div><div style="position:absolute;left:50%;top:38px;transform:translateX(-50%);font-size:47px;filter:drop-shadow(0 0 17px ${m.color}66)">${["◉","✦","☠","♟","♨"][floor]||"☠"}</div><div style="position:absolute;left:0;right:0;bottom:0;text-align:center;padding:8px;background:#0c1322a8;color:#e6eaff;font-weight:800;font-size:13px">${m.name}<div style="height:6px;background:#4a253b;border-radius:8px;margin:6px auto 0;width:65%;overflow:hidden"><div style="height:100%;width:${Math.max(0,m.hp/m.max*100)}%;background:linear-gradient(90deg,#ff777f,#ffbd78)"></div></div><small style="color:#b8c4dc;font-weight:500">${Math.max(0,m.hp)} / ${m.max} HP</small></div></div>`;
+    }
+    function renderActions(){actions.innerHTML="";if(ended){actions.appendChild(btn("Start a new run ↻",()=>{floor=0;hp=100;maxHp=100;potions=3;gold=0;xp=0;guarding=false;ended=false;spawnMonster();},true));return;}
+      actions.appendChild(btn("⚔ Attack",attack,true));actions.appendChild(btn("🛡 Guard",guard));actions.appendChild(btn("✚ Use potion",potion));actions.appendChild(btn("↗ Flee",flee));}
+    function spawnMonster(){monster={...monsters[floor]};guarding=false;updateHud();drawScene();renderActions();$(".eyebrow",root).textContent=`DUNGEON RUN · FLOOR ${floor+1} OF 5`;say(`${monster.name} blocks the passage. What will you do?`);}
+    function enemyTurn(){if(monster.hp<=0)return;let damage=monster.atk;if(guarding){damage=Math.max(1,Math.floor(damage*.35));guarding=false;}hp=Math.max(0,hp-damage);updateHud();if(hp<=0){ended=true;addScore(Math.floor(xp/2)+gold);say(`You were defeated on floor ${floor+1}. You earned ${xp} XP and found ${gold} gold. Try a different strategy!`);renderActions();}else say(`${monster.name} hits you for ${damage} damage.`);}
+    function attack(){if(ended)return;const damage=8+Math.floor(Math.random()*11)+(floor===4?0:2);monster.hp=Math.max(0,monster.hp-damage);beep(270,.09);if(monster.hp<=0){const reward=monster.xp;xp+=reward;gold+=5+Math.floor(Math.random()*11);updateHud();drawScene();if(floor===4){ended=true;addScore(xp+gold+100);say(`VICTORY! You defeated the Ember Warden and escaped the crypt with ${gold} gold. Bonus +100 points!`);renderActions();return;}say(`${monster.name} defeated! You find gold and a staircase. Your health is restored by 8.`);hp=Math.min(maxHp,hp+8);floor++;updateHud();renderActions();const next=btn("Descend to floor "+(floor+1)+" ↓",spawnMonster,true);actions.innerHTML="";actions.appendChild(next);}else{drawScene();enemyTurn();}}
+    function guard(){if(ended)return;guarding=true;const before=hp;enemyTurn();if(hp>0)say(`You brace for impact${before-hp>0?` and reduce the hit to ${before-hp} damage`:""}.`);}
+    function potion(){if(ended||potions<=0){say(potions<=0?"No potions left!":"The run has ended.");return;}potions--;const healed=Math.min(30,maxHp-hp);hp+=healed;updateHud();beep(650);say(`You drink a potion and recover ${healed} HP.`);enemyTurn();}
+    function flee(){if(ended)return;if(Math.random()<.5){hp=Math.max(1,hp-4);updateHud();say("You escape the chamber, but lose 4 HP scrambling away. You can restart to try the dungeon again.");ended=true;addScore(Math.floor(xp/2));renderActions();}else{say("The passage is blocked! The monster gets a free strike.");enemyTurn();}}
+    spawnMonster();return ()=>{};
+  }
+
 })();
